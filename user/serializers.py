@@ -15,7 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'password': {
                 'write_only': True,
-                'min_length': 5,
+                'min_length': 4,
             }
         }
 
@@ -25,6 +25,18 @@ class UserSerializer(serializers.ModelSerializer):
         :arg validated_data: data passed in from http_post with json form.
         """
         return get_user_model().objects.create_user(**validated_data)
+
+    def update(self, instance, validated_data):
+        """update a user, setting the password correctly and return it."""
+
+        password = validated_data.pop('password', None)
+        user = super().update(instance, validated_data)
+
+        if password:
+            user.set_password(password)
+            user.save()
+
+        return user
 
 
 class AuthTokenSerializer(serializers.Serializer):
