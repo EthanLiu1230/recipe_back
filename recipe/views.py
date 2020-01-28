@@ -4,7 +4,7 @@ from rest_framework.authentication import TokenAuthentication
 # combine view_sets and mixins to create list_Model_view_set
 from rest_framework.permissions import IsAuthenticated
 
-from core.models import Tag
+from core import models
 from recipe import serializers
 
 
@@ -20,7 +20,7 @@ class TagViewSet(viewsets.GenericViewSet,
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
     serializer_class = serializers.TagSerializer
-    queryset = Tag.objects.all()
+    queryset = models.Tag.objects.all()
 
     def get_queryset(self):
         """Filter objects for the current authenticated user only."""
@@ -35,3 +35,15 @@ class TagViewSet(viewsets.GenericViewSet,
         """
         # provide the fk information
         serializer.save(user=self.request.user)
+
+
+class IngredientViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+    """Manage ingredients in the database"""
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+    serializer_class = serializers.IngredientSerializer
+    queryset = models.Ingredient.objects.all()
+
+    def get_queryset(self):
+        """Return objects for the current authenticated user."""
+        return self.queryset.filter(user=self.request.user).order_by('-name')
