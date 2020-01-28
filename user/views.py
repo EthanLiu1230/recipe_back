@@ -1,8 +1,18 @@
 from rest_framework import generics
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.settings import api_settings
 
-from user.serializers import UserSerializer
+from user.serializers import UserSerializer, AuthTokenSerializer
 
 
 class CreateUserView(generics.CreateAPIView):
-    """API View: Create a new user."""
+    """Create a new user."""
     serializer_class = UserSerializer
+
+
+class CreateTokenView(ObtainAuthToken):
+    """Create a new auth token for user."""
+    serializer_class = AuthTokenSerializer
+    # set api gui in browser ?
+    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
+

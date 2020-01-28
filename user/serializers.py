@@ -1,4 +1,7 @@
-from django.contrib.auth import get_user_model
+from abc import ABC
+
+from django.contrib.auth import get_user_model, authenticate
+from django.utils.translation import ugettext_lazy as _
 
 from rest_framework import serializers
 
@@ -22,3 +25,34 @@ class UserSerializer(serializers.ModelSerializer):
         :arg validated_data: data passed in from http_post with json form.
         """
         return get_user_model().objects.create_user(**validated_data)
+
+
+class AuthTokenSerializer(serializers.Serializer):
+    """Serializer for the user authentication object"""
+    email = serializers.CharField()
+    password = serializers.CharField(
+        style={'input_type': 'password'},
+        trim_whitespace=False,  # By default, django will trim off whitespace in password.
+    )
+
+    def validate(self, attrs):
+        """
+        Validate and authenticate the user.
+        Check if the inputs are correct.
+        """
+        email = attrs.get('email')
+        password = attrs.get('password')
+
+        user = authenticate(
+            request=self.context.get('request'),  # get from serializer->context
+            username=email,
+            password=password
+        )
+        if not user:
+            msg = _('Unable to authenticate with provided credentials')
+            # serializer will handle this error by Response HTTP400
+            raise serializers.ValidationError(msg, code='authentication')
+
+        attrs['user'] = user
+        # Whenever validate attributes, must return attributes back.
+        return attrs
