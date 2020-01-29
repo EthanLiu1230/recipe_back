@@ -3,7 +3,7 @@ from rest_framework.authentication import TokenAuthentication
 # combine view_sets and mixins to create list_Model_view_set
 from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
 from core import models
 from recipe import serializers
@@ -37,3 +37,15 @@ class IngredientViewSet(BaseRecipeAttrViewSet):
     """Manage ingredients in the database."""
     serializer_class = serializers.IngredientSerializer
     queryset = models.Ingredient.objects.all()
+
+
+class RecipeViewSet(ModelViewSet):
+    """Manage recipe in the database"""
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+    serializer_class = serializers.RecipeSerializer
+    queryset = models.Recipe.objects.all()
+
+    def get_queryset(self):
+        """Retrieve the recipes for the authenticated user"""
+        return self.queryset.filter(user=self.request.user)
