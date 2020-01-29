@@ -10,6 +10,12 @@ from recipe import serializers
 
 
 class BaseRecipeAttrViewSet(GenericViewSet, ListModelMixin, CreateModelMixin):
+    """
+    Manage tags in the database.
+    1. requires auth
+    2. list attr_objects
+    3. attr_objects are specific for the user that is authenticated
+    """
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 
@@ -56,3 +62,7 @@ class RecipeViewSet(ModelViewSet):
             return serializers.RecipeDetailSerializer
         else:
             return self.serializer_class
+
+    def perform_create(self, serializer):
+        """Create a new recipe."""
+        serializer.save(user=self.request.user)
